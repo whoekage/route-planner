@@ -1,11 +1,16 @@
+<<<<<<< HEAD
 const axios = require('axios');
 
 // Предзагруженные данные дорожной сети Алматы
 let almatyRoadNetwork = null;
+=======
+import axios from 'axios';
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
 
 // OSRM API base URL
 const OSRM_API = 'https://router.project-osrm.org/route/v1/driving/';
 
+<<<<<<< HEAD
 // Попытка загрузить предзагруженные данные
 try {
   almatyRoadNetwork = require('../data/almaty_road_network.json');
@@ -14,12 +19,15 @@ try {
   console.warn('Не удалось загрузить предзагруженные данные:', error);
 }
 
+=======
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
 /**
  * Calculate route between two points
  * @param {Object} start - Start coordinates {lat, lon}
  * @param {Object} end - End coordinates {lat, lon}
  * @returns {Promise<Object>} - Route information with distance and duration
  */
+<<<<<<< HEAD
 const calculateRoute = (start, end, roadNetwork) => {
   try {
     // Find nearest nodes in the graph to the start and end coordinates
@@ -51,6 +59,28 @@ const calculateRoute = (start, end, roadNetwork) => {
       duration: 0,
       path: [],
       geometry: null,
+=======
+export const calculateRoute = async (start, end) => {
+  try {
+    const url = `${OSRM_API}${start.lon},${start.lat};${end.lon},${end.lat}?overview=false`;
+    const response = await axios.get(url);
+    
+    if (response.data && response.data.routes && response.data.routes.length > 0) {
+      const route = response.data.routes[0];
+      return {
+        distance: route.distance, // in meters
+        duration: route.duration, // in seconds
+        success: true
+      };
+    }
+    
+    throw new Error('No route found');
+  } catch (error) {
+    console.error('Routing error:', error);
+    return {
+      distance: 0,
+      duration: 0,
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
       success: false,
       error: error.message
     };
@@ -58,6 +88,7 @@ const calculateRoute = (start, end, roadNetwork) => {
 };
 
 /**
+<<<<<<< HEAD
  * Find the nearest node in the road network to the given coordinates
  * @param {Object} point - Coordinates {lat, lon}
  * @param {Array} nodes - Array of network nodes with coordinates
@@ -225,11 +256,17 @@ const createLineStringFromPath = (path, nodes) => {
 };
 
 /**
+=======
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
  * Calculate distance matrix between multiple points
  * @param {Array<Object>} points - Array of points with {lat, lon}
  * @returns {Promise<Array<Array<Object>>>} - Matrix of routes between points
  */
+<<<<<<< HEAD
 const calculateDistanceMatrix = async (points) => {
+=======
+export const calculateDistanceMatrix = async (points) => {
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
   const matrix = [];
   
   // For each start point
@@ -242,6 +279,7 @@ const calculateDistanceMatrix = async (points) => {
         // Distance to self is 0
         row.push({ distance: 0, duration: 0, success: true });
       } else {
+<<<<<<< HEAD
         // Use local calculation if road network is available
         if (almatyRoadNetwork) {
           const route = calculateRoute(points[i], points[j], almatyRoadNetwork);
@@ -272,6 +310,14 @@ const calculateDistanceMatrix = async (points) => {
           // Add a small delay between API calls
           await new Promise(resolve => setTimeout(resolve, 200));
         }
+=======
+        // Calculate actual route
+        const route = await calculateRoute(points[i], points[j]);
+        row.push(route);
+        
+        // Add a small delay between API calls
+        await new Promise(resolve => setTimeout(resolve, 200));
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
       }
     }
     
@@ -286,6 +332,7 @@ const calculateDistanceMatrix = async (points) => {
  * @param {Array<Object>} orderedPoints - Array of points in visit order with {lat, lon}
  * @returns {Promise<Object>} - Detailed route with geometry
  */
+<<<<<<< HEAD
 const getFullRoute = async (orderedPoints) => {
   try {
     // Try using local data first if available
@@ -294,6 +341,10 @@ const getFullRoute = async (orderedPoints) => {
     }
     
     // Fallback to OSRM API
+=======
+export const getFullRoute = async (orderedPoints) => {
+  try {
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
     // Create coordinates string for API
     const coordinatesStr = orderedPoints
       .map(point => `${point.lon},${point.lat}`)
@@ -308,7 +359,10 @@ const getFullRoute = async (orderedPoints) => {
         distance: route.distance, // in meters
         duration: route.duration, // in seconds
         geometry: route.geometry, // GeoJSON LineString
+<<<<<<< HEAD
         source: 'osrm-api',
+=======
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
         success: true
       };
     }
@@ -321,6 +375,7 @@ const getFullRoute = async (orderedPoints) => {
       duration: 0,
       geometry: null,
       success: false,
+<<<<<<< HEAD
       source: 'none',
       error: error.message
     };
@@ -391,4 +446,9 @@ module.exports = {
   calculateDistanceMatrix,
   getFullRoute,
   getFullRouteLocal
+=======
+      error: error.message
+    };
+  }
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
 }; 

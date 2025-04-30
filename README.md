@@ -69,6 +69,7 @@ This project uses data from OpenStreetMap, which is licensed under the Open Data
 
 - Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
 - Routing powered by [OSRM](http://project-osrm.org/)
+<<<<<<< HEAD
 - Geocoding by [Nominatim](https://nominatim.org/)
 
 ## Local Routing with OpenStreetMap
@@ -123,3 +124,6 @@ npm run download-osm
 ```
 
 This will force a fresh download of the data. 
+=======
+- Geocoding by [Nominatim](https://nominatim.org/) 
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a

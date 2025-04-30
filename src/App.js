@@ -7,7 +7,10 @@ import { batchGeocodeAddresses } from './services/geocoding';
 import { calculateDistanceMatrix, getFullRoute } from './services/routing';
 import { solveTSP } from './utils/tsp';
 import 'bootstrap/dist/css/bootstrap.min.css';
+<<<<<<< HEAD
 import './App.css';
+=======
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
 
 function App() {
   const [geocodedAddresses, setGeocodedAddresses] = useState([]);
@@ -60,8 +63,13 @@ function App() {
     <Container className="py-4">
       <Row className="mb-4">
         <Col>
+<<<<<<< HEAD
           <h1>Маршруты по Алматы</h1>
           <p>Введите адреса в Алматы для поиска оптимального маршрута, посещающего все локации.</p>
+=======
+          <h1>Route Planner</h1>
+          <p>Enter addresses in Almaty to find the optimal route visiting all locations.</p>
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
         </Col>
       </Row>
       
@@ -82,7 +90,11 @@ function App() {
               <Spinner animation="border" role="status" variant="primary">
                 <span className="visually-hidden">Loading...</span>
               </Spinner>
+<<<<<<< HEAD
               <p className="mt-2">Расчет оптимального маршрута...</p>
+=======
+              <p className="mt-2">Calculating optimal route...</p>
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
             </div>
           )}
           
@@ -104,12 +116,20 @@ function App() {
           />
         </Col>
       </Row>
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
       <Row className="mt-4">
         <Col>
           <footer className="text-center text-muted">
             <small>
+<<<<<<< HEAD
               Route Planner | Использует локальные данные OpenStreetMap | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+=======
+              Route Planner | Using OpenStreetMap data | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
             </small>
           </footer>
         </Col>

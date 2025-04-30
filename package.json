@@ -19,8 +19,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "download-osm": null
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -39,4 +38,8 @@
       "last 1 safari version"
     ]
   }
+<<<<<<< HEAD
 }
+=======
+} 
+>>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a

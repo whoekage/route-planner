@@ -2,3 +2,4 @@ node_modules
 
 # Large files that exceed GitHub's size limit
 src/data/almaty_road_network.json
+./src/data/almaty_road_network.json
