@@ -20,7 +20,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "download-osm": null
+    "download-osm": "node ./src/download-osm.js"
   },
   "eslintConfig": {
     "extends": [

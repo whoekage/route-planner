@@ -7,7 +7,7 @@ const path = require('path');
  * File system wrapper for OSM data storage
  */
 const osmStorage = {
-  DATA_DIR: path.join(process.cwd(), 'public', 'data', 'almaty_road_network.json'), // Directory to store OSM data files
+  DATA_DIR: path.join(process.cwd(), 'public', 'data'), // Directory to store OSM data files
   
   /**
    * Ensure data directory exists
