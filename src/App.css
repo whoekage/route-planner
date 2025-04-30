@@ -1,0 +1,71 @@
+.App {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.route-calculator {
+  margin-top: 2rem;
+}
+
+.point-row {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+h2, h3 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 2rem !important;
+}
+
+/* Стили для карты */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Стили для маршрута */
+.leaflet-interactive {
+  cursor: pointer;
+}
+
+/* Стили для контейнера карты */
+.map-container {
+  height: 500px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* Стили для нумерованных маркеров */
+.custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Стили для информации о маршруте */
+.route-info {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.route-info .badge {
+  font-size: 0.9rem;
+  padding: 8px 12px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .map-container {
+    height: 350px;
+  }
+} 

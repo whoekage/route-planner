@@ -69,4 +69,57 @@ This project uses data from OpenStreetMap, which is licensed under the Open Data
 
 - Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
 - Routing powered by [OSRM](http://project-osrm.org/)
-- Geocoding by [Nominatim](https://nominatim.org/) 
+- Geocoding by [Nominatim](https://nominatim.org/)
+
+## Local Routing with OpenStreetMap
+
+This application now supports local routing using OpenStreetMap data for Almaty. This allows for routing calculations to be performed locally without depending on external APIs.
+
+### Setup
+
+1. Install dependencies:
+```
+npm install
+```
+
+2. Download OSM data for Almaty (only needs to be done once):
+```
+npm run download-osm
+```
+This will download road network data for Almaty and save it in the `data` folder.
+
+### Using Local Routing
+
+To use local routing in your code:
+
+```javascript
+import { loadAlmatyRoadNetwork, getFullRouteLocal } from 'src/services';
+
+// Load the road network (will use cached file if available)
+const roadNetwork = await loadAlmatyRoadNetwork();
+
+// Define waypoints
+const points = [
+  { lat: 43.2422465, lon: 76.9026493 },
+  { lat: 43.2490378, lon: 76.9186243 },
+  { lat: 43.2422465, lon: 76.9026493 }
+];
+
+// Calculate route
+const route = await getFullRouteLocal(points, roadNetwork);
+
+// Use the route data (same format as OSRM API response)
+console.log(`Distance: ${route.distance} meters`);
+console.log(`Duration: ${route.duration} seconds`);
+// route.geometry contains the GeoJSON LineString for mapping
+```
+
+### Updating OSM Data
+
+To update the OSM data (e.g., if roads have changed):
+
+```
+npm run download-osm
+```
+
+This will force a fresh download of the data. 
