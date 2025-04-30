@@ -1,129 +1,125 @@
-# Almaty Route Planner
+# Планировщик маршрутов по Алматы
 
-A web application for planning optimal routes between multiple addresses in Almaty, Kazakhstan. The application uses OpenStreetMap data to find the shortest path visiting all specified locations and returning to the starting point.
+Веб-приложение для планирования оптимальных маршрутов между несколькими адресами в Алматы, Казахстан. Приложение использует данные OpenStreetMap для нахождения кратчайшего пути, проходящего через все указанные места и возвращающегося в начальную точку.
 
-## Features
+## Возможности
 
-- Input multiple addresses in Almaty
-- Geocode addresses to coordinates using OpenStreetMap Nominatim
-- Calculate optimized routes using OSRM (Open Source Routing Machine)
-- Solve the Traveling Salesman Problem to minimize total travel time
-- Display the route on an interactive map
-- Show detailed route information including distance and estimated time
+- Ввод нескольких адресов в Алматы
+- Геокодирование адресов в координаты с помощью OpenStreetMap Nominatim
+- Расчет оптимизированных маршрутов с использованием OSRM (Open Source Routing Machine)
+- Решение задачи коммивояжера для минимизации общего времени в пути
+- Отображение маршрута на интерактивной карте
+- Отображение подробной информации о маршруте, включая расстояние и ориентировочное время
 
-## Technologies Used
+## Используемые технологии
 
-- React for the frontend
-- React-Leaflet for map integration
-- Bootstrap for UI components
-- OpenStreetMap Nominatim API for geocoding
-- OSRM API for route calculation
-- Custom implementation of the TSP algorithm (nearest neighbor + 2-opt)
+- React для фронтенда
+- React-Leaflet для интеграции карт
+- Bootstrap для UI-компонентов
+- OpenStreetMap Nominatim API для геокодирования
+- OSRM API для расчета маршрутов
+- Пользовательская реализация алгоритма задачи коммивояжера (ближайший сосед + 2-opt)
 
-## Getting Started
+## Начало работы
 
-### Prerequisites
+### Предварительные требования
 
-- Node.js (v14 or higher)
-- npm or yarn
+- Node.js (v14 или выше)
+- npm или yarn
 
-### Installation
+### Установка
 
-1. Clone the repository:
+1. Клонировать репозиторий:
    ```
-   git clone <repository-url>
+   git clone <url-репозитория>
    cd route-planner
    ```
 
-2. Install dependencies:
+2. Установить зависимости:
    ```
    npm install
    ```
 
-3. Start the development server:
+3. Запустить сервер разработки:
    ```
    npm start
    ```
 
-4. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
+4. Открыть браузер и перейти по адресу [http://localhost:3000](http://localhost:3000)
 
-## Usage
+## Использование
 
-1. Enter two or more addresses in Almaty in the input fields
-2. Click "Calculate Route" to find the optimal path
-3. View the route on the map with numbered markers showing the visit order
-4. Check the route summary for total distance and estimated time
-5. The application will automatically return to the starting point
+1. Введите два или более адреса в Алматы в поля ввода
+2. Нажмите "Рассчитать маршрут" для нахождения оптимального пути
+3. Просмотрите маршрут на карте с пронумерованными маркерами, показывающими порядок посещения
+4. Проверьте сводку маршрута для получения информации об общем расстоянии и ориентировочном времени
+5. Приложение автоматически вернется в начальную точку
 
-## API Usage Limitations
+## Ограничения использования API
 
-- Nominatim API: Limited to 1 request per second
-- OSRM API: Public instances have usage limits
-- Both require proper attribution to OpenStreetMap
+- Nominatim API: Ограничен до 1 запроса в секунду
+- OSRM API: Публичные инстансы имеют ограничения на использование
+- Оба требуют правильной атрибуции OpenStreetMap
 
-## License
+## Лицензия
 
-This project uses data from OpenStreetMap, which is licensed under the Open Data Commons Open Database License (ODbL).
+Этот проект использует данные из OpenStreetMap, которые лицензированы под Open Data Commons Open Database License (ODbL).
 
-## Attribution
+## Атрибуция
 
-- Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
-- Routing powered by [OSRM](http://project-osrm.org/)
-<<<<<<< HEAD
-- Geocoding by [Nominatim](https://nominatim.org/)
+- Данные карты © [OpenStreetMap](https://www.openstreetmap.org/copyright) участники
+- Маршрутизация работает на [OSRM](http://project-osrm.org/)
+- Геокодирование с помощью [Nominatim](https://nominatim.org/)
 
-## Local Routing with OpenStreetMap
+## Локальная маршрутизация с OpenStreetMap
 
-This application now supports local routing using OpenStreetMap data for Almaty. This allows for routing calculations to be performed locally without depending on external APIs.
+Это приложение теперь поддерживает локальную маршрутизацию с использованием данных OpenStreetMap для Алматы. Это позволяет выполнять расчеты маршрутов локально без зависимости от внешних API.
 
-### Setup
+### Настройка
 
-1. Install dependencies:
+1. Установите зависимости:
 ```
 npm install
 ```
 
-2. Download OSM data for Almaty (only needs to be done once):
+2. Загрузите данные OSM для Алматы (нужно сделать только один раз):
 ```
 npm run download-osm
 ```
-This will download road network data for Almaty and save it in the `data` folder.
+Это загрузит данные дорожной сети для Алматы и сохранит их в папке `data`.
 
-### Using Local Routing
+### Использование локальной маршрутизации
 
-To use local routing in your code:
+Для использования локальной маршрутизации в вашем коде:
 
 ```javascript
 import { loadAlmatyRoadNetwork, getFullRouteLocal } from 'src/services';
 
-// Load the road network (will use cached file if available)
+// Загрузка дорожной сети (будет использовать кэшированный файл, если доступен)
 const roadNetwork = await loadAlmatyRoadNetwork();
 
-// Define waypoints
+// Определение путевых точек
 const points = [
   { lat: 43.2422465, lon: 76.9026493 },
   { lat: 43.2490378, lon: 76.9186243 },
   { lat: 43.2422465, lon: 76.9026493 }
 ];
 
-// Calculate route
+// Расчет маршрута
 const route = await getFullRouteLocal(points, roadNetwork);
 
-// Use the route data (same format as OSRM API response)
-console.log(`Distance: ${route.distance} meters`);
-console.log(`Duration: ${route.duration} seconds`);
-// route.geometry contains the GeoJSON LineString for mapping
+// Использование данных маршрута (в том же формате, что и ответ OSRM API)
+console.log(`Расстояние: ${route.distance} метров`);
+console.log(`Длительность: ${route.duration} секунд`);
+// route.geometry содержит LineString GeoJSON для отображения на карте
 ```
 
-### Updating OSM Data
+### Обновление данных OSM
 
-To update the OSM data (e.g., if roads have changed):
+Для обновления данных OSM (например, если дороги изменились):
 
 ```
 npm run download-osm
 ```
 
-This will force a fresh download of the data. 
-=======
-- Geocoding by [Nominatim](https://nominatim.org/) 
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
+Это запустит принудительную повторную загрузку данных. 

@@ -1,69 +1,39 @@
 const axios = require('axios');
+const fs = require('fs').promises;
+const fsSync = require('fs');
+const path = require('path');
 
 /**
- * IndexedDB wrapper for OSM data storage
+ * File system wrapper for OSM data storage
  */
 const osmStorage = {
-  DB_NAME: 'osmRouterDB',
-  DB_VERSION: 1,
-  STORE_NAME: 'roadNetworks',
-
+  DATA_DIR: path.join(process.cwd(), 'public', 'data', 'almaty_road_network.json'), // Directory to store OSM data files
+  
   /**
-   * Open IndexedDB connection
-   * @returns {Promise<IDBDatabase>}
+   * Ensure data directory exists
+   * @returns {Promise<void>}
    */
-  openDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
-      
-      request.onerror = () => reject(new Error('Failed to open IndexedDB'));
-      
-      request.onsuccess = () => resolve(request.result);
-      
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
-          db.createObjectStore(this.STORE_NAME, { keyPath: 'id' });
-        }
-      };
-    });
+  async ensureDataDir() {
+    if (!fsSync.existsSync(this.DATA_DIR)) {
+      await fs.mkdir(this.DATA_DIR, { recursive: true });
+    }
   },
 
   /**
-   * Save road network data to IndexedDB
+   * Save road network data to file system
    * @param {Object} roadNetwork - Road network data
    * @param {string} id - Identifier for the data
    * @returns {Promise<void>}
    */
   async saveRoadNetwork(roadNetwork, id) {
     try {
-      const db = await this.openDB();
-      const transaction = db.transaction([this.STORE_NAME], 'readwrite');
-      const store = transaction.objectStore(this.STORE_NAME);
+      await this.ensureDataDir();
       
-      // Add metadata to the roadNetwork object
-      const dataToStore = {
-        id,
-        roadNetwork,
-        timestamp: Date.now()
-      };
+      const filePath = path.join(this.DATA_DIR, `${id}.json`);
       
-      return new Promise((resolve, reject) => {
-        const request = store.put(dataToStore);
-        
-        request.onsuccess = () => {
-          console.log(`Road network saved with ID: ${id}`);
-          resolve();
-        };
-        
-        request.onerror = () => {
-          reject(new Error('Error saving road network data to IndexedDB'));
-        };
-        
-        transaction.oncomplete = () => {
-          db.close();
-        };
-      });
+      // Save the road network directly without nesting
+      await fs.writeFile(filePath, JSON.stringify(roadNetwork, null, 2));
+      console.log(`Road network saved with ID: ${id}`);
     } catch (error) {
       console.error('Error in saveRoadNetwork:', error);
       throw error;
@@ -71,37 +41,32 @@ const osmStorage = {
   },
 
   /**
-   * Load road network data from IndexedDB
+   * Load road network data from file system
    * @param {string} id - Identifier for the data
    * @returns {Promise<Object|null>} - Road network data or null if not found
    */
   async loadRoadNetwork(id) {
     try {
-      const db = await this.openDB();
-      const transaction = db.transaction([this.STORE_NAME], 'readonly');
-      const store = transaction.objectStore(this.STORE_NAME);
+      await this.ensureDataDir();
       
-      return new Promise((resolve, reject) => {
-        const request = store.get(id);
+      const filePath = path.join(this.DATA_DIR, `${id}.json`);
+      
+      if (fsSync.existsSync(filePath)) {
+        const fileData = await fs.readFile(filePath, 'utf8');
+        const roadNetwork = JSON.parse(fileData);
         
-        request.onsuccess = () => {
-          if (request.result) {
-            console.log(`Road network loaded with ID: ${id}`);
-            resolve(request.result.roadNetwork);
-          } else {
-            console.log(`Road network with ID ${id} not found`);
-            resolve(null);
-          }
-        };
+        // Validate that the network has the expected structure
+        if (!roadNetwork.nodes || !roadNetwork.edges) {
+          console.error('Invalid road network format: missing nodes or edges');
+          return null;
+        }
         
-        request.onerror = () => {
-          reject(new Error('Error loading road network data from IndexedDB'));
-        };
-        
-        transaction.oncomplete = () => {
-          db.close();
-        };
-      });
+        console.log(`Road network loaded with ID: ${id}`);
+        return roadNetwork;
+      } else {
+        console.log(`Road network with ID ${id} not found`);
+        return null;
+      }
     } catch (error) {
       console.error('Error in loadRoadNetwork:', error);
       return null;
@@ -304,7 +269,7 @@ const calculateDistance = (node1, node2) => {
 const loadAlmatyRoadNetwork = async (forceDownload = false) => {
   const networkId = 'almaty_road_network';
   
-  // Try to load from IndexedDB first, unless forced to download
+  // Try to load from file system first, unless forced to download
   if (!forceDownload) {
     const localData = await osmStorage.loadRoadNetwork(networkId);
     if (localData) {
@@ -330,7 +295,7 @@ const loadAlmatyRoadNetwork = async (forceDownload = false) => {
     
     console.log(`Road network created with ${Object.keys(roadNetwork.nodes).length} nodes and ${roadNetwork.edges.length} edges`);
     
-    // Save to IndexedDB for future use
+    // Save to file system for future use
     await osmStorage.saveRoadNetwork(roadNetwork, networkId);
     
     return roadNetwork;

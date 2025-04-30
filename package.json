@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^1.6.2",
+    "axios": "^1.9.0",
     "bootstrap": "^5.3.2",
     "esm": "^3.2.25",
     "leaflet": "^1.9.4",
@@ -19,7 +19,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "download-osm": null
   },
   "eslintConfig": {
     "extends": [
@@ -38,8 +39,4 @@
       "last 1 safari version"
     ]
   }
-<<<<<<< HEAD
 }
-=======
-} 
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a

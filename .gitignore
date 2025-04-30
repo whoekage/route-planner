@@ -1,5 +1,6 @@
 node_modules
 
-# Large files that exceed GitHub's size limit
+# Large files
 src/data/almaty_road_network.json
-./src/data/almaty_road_network.json
+# Ignore all large JSON files (over 100MB)
+*.json

@@ -1,42 +1,63 @@
-<<<<<<< HEAD
 const axios = require('axios');
 
 // Предзагруженные данные дорожной сети Алматы
 let almatyRoadNetwork = null;
-=======
-import axios from 'axios';
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
 
 // OSRM API base URL
 const OSRM_API = 'https://router.project-osrm.org/route/v1/driving/';
 
-<<<<<<< HEAD
-// Попытка загрузить предзагруженные данные
-try {
-  almatyRoadNetwork = require('../data/almaty_road_network.json');
-  console.log('Загружены предзагруженные данные дорожной сети Алматы');
-} catch (error) {
-  console.warn('Не удалось загрузить предзагруженные данные:', error);
-}
+// Асинхронно загружаем данные дорожной сети
+const loadRoadNetworkData = async () => {
+  if (almatyRoadNetwork) return almatyRoadNetwork;
+  
+  try {
+    const response = await fetch('/data/almaty_road_network.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    almatyRoadNetwork = await response.json();
+    console.log('Данные дорожной сети Алматы успешно загружены');
+    console.log('Размер сети:', almatyRoadNetwork ? 
+      `${Object.keys(almatyRoadNetwork.nodes).length} узлов, ${almatyRoadNetwork.edges.length} рёбер` : 'нет данных');
+    return almatyRoadNetwork;
+  } catch (error) {
+    console.error('Ошибка загрузки данных дорожной сети:', error);
+    return null;
+  }
+};
 
-=======
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
+// Запускаем загрузку данных сразу
+// loadRoadNetworkData();
+
 /**
  * Calculate route between two points
  * @param {Object} start - Start coordinates {lat, lon}
  * @param {Object} end - End coordinates {lat, lon}
  * @returns {Promise<Object>} - Route information with distance and duration
  */
-<<<<<<< HEAD
 const calculateRoute = (start, end, roadNetwork) => {
   try {
-    // Find nearest nodes in the graph to the start and end coordinates
-    const startNode = findNearestNode(start, roadNetwork.nodes);
-    const endNode = findNearestNode(end, roadNetwork.nodes);
+    // Увеличиваем радиус поиска по мере необходимости
+    const searchDistances = [100, 200, 500, 1000, 2000];
+    let startNode = null;
+    let endNode = null;
+
+    // Пробуем разные радиусы поиска для начальной и конечной точек
+    for (const distance of searchDistances) {
+      if (!startNode) {
+        startNode = findNearestNode(start, roadNetwork.nodes, distance);
+      }
+      if (!endNode) {
+        endNode = findNearestNode(end, roadNetwork.nodes, distance);
+      }
+      if (startNode && endNode) break;
+    }
     
     if (!startNode || !endNode) {
       throw new Error('Could not find nearby road network nodes');
     }
+    
+    console.log(`Расчет маршрута от ${startNode.id} до ${endNode.id}`);
     
     // Perform Dijkstra's algorithm to find shortest path
     const result = dijkstra(roadNetwork, startNode.id, endNode.id);
@@ -59,28 +80,6 @@ const calculateRoute = (start, end, roadNetwork) => {
       duration: 0,
       path: [],
       geometry: null,
-=======
-export const calculateRoute = async (start, end) => {
-  try {
-    const url = `${OSRM_API}${start.lon},${start.lat};${end.lon},${end.lat}?overview=false`;
-    const response = await axios.get(url);
-    
-    if (response.data && response.data.routes && response.data.routes.length > 0) {
-      const route = response.data.routes[0];
-      return {
-        distance: route.distance, // in meters
-        duration: route.duration, // in seconds
-        success: true
-      };
-    }
-    
-    throw new Error('No route found');
-  } catch (error) {
-    console.error('Routing error:', error);
-    return {
-      distance: 0,
-      duration: 0,
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
       success: false,
       error: error.message
     };
@@ -88,15 +87,18 @@ export const calculateRoute = async (start, end) => {
 };
 
 /**
-<<<<<<< HEAD
  * Find the nearest node in the road network to the given coordinates
  * @param {Object} point - Coordinates {lat, lon}
  * @param {Array} nodes - Array of network nodes with coordinates
+ * @param {number} maxDistance - Maximum distance to search in meters (optional)
  * @returns {Object} - Nearest node
  */
-const findNearestNode = (point, nodes) => {
+const findNearestNode = (point, nodes, maxDistance = 300) => {
   let nearestNode = null;
   let minDistance = Infinity;
+  let nearbyNodes = [];
+  
+  console.log(`Ищем ближайший узел к точке: ${point.lat}, ${point.lon}`);
   
   // Use for...in to iterate over object properties
   for (const nodeId in nodes) {
@@ -106,10 +108,28 @@ const findNearestNode = (point, nodes) => {
       { lat: node.lat, lon: node.lon }
     );
     
+    // Collect all nodes within reasonable distance for debugging
+    if (distance < maxDistance) {
+      nearbyNodes.push({ id: nodeId, distance, lat: node.lat, lon: node.lon });
+    }
+    
     if (distance < minDistance) {
       minDistance = distance;
       nearestNode = node;
     }
+  }
+  
+  // Sort nearby nodes by distance for debugging
+  nearbyNodes.sort((a, b) => a.distance - b.distance);
+  
+  // Get top 5 nearest nodes for logging
+  const topNodes = nearbyNodes.slice(0, 5);
+  
+  if (nearestNode) {
+    console.log(`Найден ближайший узел: id=${nearestNode.id}, расстояние=${minDistance.toFixed(2)}м`);
+    console.log(`Ближайшие узлы (TOP 5):`, topNodes);
+  } else {
+    console.error(`Не найдено подходящих узлов в радиусе ${maxDistance}м`);
   }
   
   return nearestNode;
@@ -164,19 +184,31 @@ const dijkstra = (roadNetwork, startNodeId, endNodeId) => {
   
   // Main Dijkstra loop
   while (unvisited.size > 0) {
-    // Find node with minimum distance
+    // Find node with minimum duration (previously distance)
     let current = null;
-    let minDistance = Infinity;
-    
+    let minDuration = Infinity; // Use duration for finding the next node
+
+    // Find the unvisited node with the smallest duration
     for (const nodeId of unvisited) {
-      if (distances[nodeId] < minDistance) {
-        minDistance = distances[nodeId];
+      if (durations[nodeId] < minDuration) { 
+        minDuration = durations[nodeId]; 
         current = nodeId;
       }
     }
     
-    // If we've reached the target or there's no path
-    if (current === null || current === endNodeId || minDistance === Infinity) {
+    // DEBUG: Log current node and its duration
+    // console.log(`Dijkstra: Visiting node ${current} with duration ${minDuration}`);
+
+    // If we've reached the target or there's no path, or the smallest duration is Infinity
+    if (current === null || current === endNodeId || minDuration === Infinity) {
+      // DEBUG: Log why the loop is breaking
+      if (current === endNodeId) {
+        console.log(`Dijkstra: Reached end node ${endNodeId}`);
+      } else if (minDuration === Infinity) {
+        console.log(`Dijkstra: Breaking loop - minimum duration is Infinity (no reachable nodes left)`);
+      } else if (current === null) {
+         console.log(`Dijkstra: Breaking loop - current node is null (shouldn't happen if unvisited is not empty)`);
+      }
       break;
     }
     
@@ -206,16 +238,20 @@ const dijkstra = (roadNetwork, startNodeId, endNodeId) => {
       const newDistance = distances[current] + edge.distance;
       const newDuration = durations[current] + edge.duration;
       
-      // Update if better route found
-      if (newDistance < distances[neighbor]) {
-        distances[neighbor] = newDistance;
-        durations[neighbor] = newDuration;
-        previous[neighbor] = current;
+      // Update if better route found based on duration
+      if (newDuration < durations[neighbor]) { // Compare durations
+        distances[neighbor] = newDistance; // Update distance as well for info
+        durations[neighbor] = newDuration; // Update duration
+        previous[neighbor] = current; // Path is based on shortest duration
       }
     }
   }
   
-  // Reconstruct path
+  // DEBUG: Log state after loop finishes
+  console.log(`Dijkstra: Loop finished. Previous for end node ${endNodeId}:`, previous[endNodeId]);
+  console.log(`Dijkstra: Duration for end node ${endNodeId}:`, durations[endNodeId]);
+
+  // Reconstruct path (based on 'previous' which was set using duration)
   const path = [];
   let current = endNodeId;
   
@@ -256,18 +292,15 @@ const createLineStringFromPath = (path, nodes) => {
 };
 
 /**
-=======
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
  * Calculate distance matrix between multiple points
  * @param {Array<Object>} points - Array of points with {lat, lon}
  * @returns {Promise<Array<Array<Object>>>} - Matrix of routes between points
  */
-<<<<<<< HEAD
 const calculateDistanceMatrix = async (points) => {
-=======
-export const calculateDistanceMatrix = async (points) => {
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
   const matrix = [];
+  
+  // Сначала дождемся загрузки данных дорожной сети
+  const roadNetwork = await loadRoadNetworkData();
   
   // For each start point
   for (let i = 0; i < points.length; i++) {
@@ -279,10 +312,9 @@ export const calculateDistanceMatrix = async (points) => {
         // Distance to self is 0
         row.push({ distance: 0, duration: 0, success: true });
       } else {
-<<<<<<< HEAD
         // Use local calculation if road network is available
-        if (almatyRoadNetwork) {
-          const route = calculateRoute(points[i], points[j], almatyRoadNetwork);
+        if (roadNetwork) {
+          const route = calculateRoute(points[i], points[j], roadNetwork);
           row.push(route);
         } else {
           // Fallback to API
@@ -310,14 +342,6 @@ export const calculateDistanceMatrix = async (points) => {
           // Add a small delay between API calls
           await new Promise(resolve => setTimeout(resolve, 200));
         }
-=======
-        // Calculate actual route
-        const route = await calculateRoute(points[i], points[j]);
-        row.push(route);
-        
-        // Add a small delay between API calls
-        await new Promise(resolve => setTimeout(resolve, 200));
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
       }
     }
     
@@ -325,61 +349,6 @@ export const calculateDistanceMatrix = async (points) => {
   }
   
   return matrix;
-};
-
-/**
- * Get full route details between ordered points
- * @param {Array<Object>} orderedPoints - Array of points in visit order with {lat, lon}
- * @returns {Promise<Object>} - Detailed route with geometry
- */
-<<<<<<< HEAD
-const getFullRoute = async (orderedPoints) => {
-  try {
-    // Try using local data first if available
-    if (almatyRoadNetwork) {
-      return getFullRouteLocal(orderedPoints, almatyRoadNetwork);
-    }
-    
-    // Fallback to OSRM API
-=======
-export const getFullRoute = async (orderedPoints) => {
-  try {
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
-    // Create coordinates string for API
-    const coordinatesStr = orderedPoints
-      .map(point => `${point.lon},${point.lat}`)
-      .join(';');
-    
-    const url = `${OSRM_API}${coordinatesStr}?overview=full&geometries=geojson`;
-    const response = await axios.get(url);
-    
-    if (response.data && response.data.routes && response.data.routes.length > 0) {
-      const route = response.data.routes[0];
-      return {
-        distance: route.distance, // in meters
-        duration: route.duration, // in seconds
-        geometry: route.geometry, // GeoJSON LineString
-<<<<<<< HEAD
-        source: 'osrm-api',
-=======
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
-        success: true
-      };
-    }
-    
-    throw new Error('No route found');
-  } catch (error) {
-    console.error('Routing error:', error);
-    return {
-      distance: 0,
-      duration: 0,
-      geometry: null,
-      success: false,
-<<<<<<< HEAD
-      source: 'none',
-      error: error.message
-    };
-  }
 };
 
 /**
@@ -394,10 +363,14 @@ const getFullRouteLocal = async (orderedPoints, roadNetwork) => {
     let totalDuration = 0;
     const allCoordinates = [];
     
+    console.log('Calculating route for points:', orderedPoints);
+    
     // Calculate routes between consecutive points
     for (let i = 0; i < orderedPoints.length - 1; i++) {
       const start = orderedPoints[i];
       const end = orderedPoints[i + 1];
+      
+      console.log(`Calculating segment ${i}: ${start.lat},${start.lon} to ${end.lat},${end.lon}`);
       
       const segmentRoute = calculateRoute(start, end, roadNetwork);
       
@@ -418,7 +391,7 @@ const getFullRouteLocal = async (orderedPoints, roadNetwork) => {
       }
     }
     
-    return {
+    const result = {
       distance: totalDistance,
       duration: totalDuration,
       geometry: {
@@ -428,6 +401,9 @@ const getFullRouteLocal = async (orderedPoints, roadNetwork) => {
       source: 'local-osm',
       success: true
     };
+    
+    console.log('Local routing complete, coordinates count:', allCoordinates.length);
+    return result;
   } catch (error) {
     console.error('Local routing error:', error);
     return {
@@ -441,14 +417,48 @@ const getFullRouteLocal = async (orderedPoints, roadNetwork) => {
   }
 };
 
-module.exports = {
-  calculateRoute,
-  calculateDistanceMatrix,
-  getFullRoute,
-  getFullRouteLocal
-=======
+/**
+ * Get full route details between ordered points
+ * @param {Array<Object>} orderedPoints - Array of points in visit order with {lat, lon}
+ * @returns {Promise<Object>} - Detailed route with geometry
+ */
+const getFullRoute = async (orderedPoints) => {
+  let roadNetwork = null; // Declare variable here
+  try {
+    // Сначала дождемся загрузки данных дорожной сети
+    roadNetwork = await loadRoadNetworkData();
+    
+    // Используем только локальные данные
+    if (roadNetwork) {
+      console.log('Using local OSM data for routing');
+      const result = await getFullRouteLocal(orderedPoints, roadNetwork);
+      console.log('Local routing result:', result);
+      return result;
+    } else {
+      // Если нет данных дорожной сети
+      throw new Error('Road network data not available');
+    }
+  } catch (error) {
+    console.error('Routing error:', error);
+    return {
+      distance: 0,
+      duration: 0,
+      geometry: null,
+      success: false,
+      source: 'none',
       error: error.message
     };
   }
->>>>>>> ddbf7a4912a3826fe78e0f704e7de725cd97cb5a
+};
+
+module.exports = {
+  loadRoadNetworkData,
+  findNearestNode,
+  dijkstra,
+  createLineStringFromPath,
+  calculateHaversineDistance,
+  calculateRoute,
+  calculateDistanceMatrix,
+  getFullRoute,
+  getFullRouteLocal,
 }; 
